@@ -1,7 +1,7 @@
 <template>
-  <Waterfall ref="waterfallRef" :waterfallList="waterfallList">
+  <Waterfall ref="waterfallRef" :waterfallList="waterfallList" @load="load">
     <template v-slot="{ item }">
-      <img :src="item.src.tiny" alt="" @load="imageLoad" />
+      <img :src="item.src" alt="" @load="imageLoad" />
     </template>
   </Waterfall>
 </template>
@@ -9,20 +9,14 @@
 <script setup>
 import Waterfall from "./components/index.vue";
 import { ref } from "vue";
-import axios from "axios";
+import { queryWaterfallList } from "@/api/index.js"
 
 const waterfallList = ref([]);
 
-const mockData = () => {
-  const instance = axios.create({
-    baseURL: "",
-    timeout: 1000,
-    headers: { "Authorization": "RlP0DWj8yDiTWobaatsJtE6eG49akiPTwBR9LIZDItg05BYqDtF8puHE" },
-  });
-
-  instance.get("https://api.pexels.com/v1/search?query=people&page=1&per_page=40").then((res) => {
-    waterfallList.value = res.data.photos
-  })
+const mockData = async () => {
+  const res = await queryWaterfallList({pageSize: 20});
+  console.log(res);
+  waterfallList.value = res.data
 };
 
 mockData();
@@ -32,6 +26,11 @@ const waterfallRef = ref(null);
 
 const imageLoad = () => {
   waterfallRef.value.layoutHandle();
+}
+
+const load = async () => {
+  const res = await queryWaterfallList({pageSize: 20});
+  waterfallList.value.push(...res.data);
 }
 </script>
 
